@@ -1,5 +1,8 @@
 import calendar
 import re
+import sys
+
+from inspect import getmembers, isfunction
 
 patterns = []
 
@@ -13,9 +16,17 @@ subs = (
 )
 
 
-def add_pattern(pattern, transform_handler):
+def add_patterns():
     global patterns
-    patterns.append((pattern, transform_handler))
+    for handler, _ in getmembers(sys.modules[__name__], isfunction):
+        if handler.startswith('pattern'):
+            fn = globals()[handler]
+            if hasattr(fn, '__regex__'):
+                patterns.append((getattr(fn, '__regex__'), fn))
+            else:
+                raise AttributeError('Function "{}" does not have the required regular expression pattern defined. '
+                                     'Please ensure you specify a regex pattern with the @regex decorator for pattern '
+                                     'handlers.'.format(handler))
 
 
 def date_clean(date_str):
@@ -32,45 +43,60 @@ def date_parse(date_str):
             return handler(date_str, match)
 
 
+def regex(pattern):
+    def decorate(func):
+        setattr(func, '__regex__', pattern)
+        return func
+    return decorate
+
 #-----------------------------------------------------------------------------------------
 
+@regex(r'[Bb]etween (\d{4}) [Aa]nd (\d{4})')
 def pattern1(date_str, match):
+    """ 'Between 1900 and 2000' = '1900-01-01', '2000-12-31' """
     return (match.group(1) + '-01-01', match.group(2) + '-12-31')
 
 
+@regex(r'^(\d{3})-$')
 def pattern2(date_str, match):
+    """ '195-' = '1950-01-01', '1959-12-31' """
     return (match.group(1) + '0-01-01', match.group(1) + '9-12-31')
 
 
+@regex(r'[Aa]fter (\d{4})')
 def pattern3(date_str, match):
+    """ 'After 1900' = '1900-12-31', None """
     return (match.group(1) + '-12-31', None)
 
 
+@regex(r'[Bb]efore (\d{4})')
 def pattern4(date_str, match):
+    """ 'Before 1900' = None, '1900-01-01' """
     return (None, match.group(1) + '-01-01')
 
 
+@regex(r'(\d{4}) or (\d{4})')
 def pattern5(date_str, match):
+    """ '1950 or 1951' = '1950-01-01', '1951-12-31' """
     return (match.group(1) + '-01-01', match.group(2) + '-12-31')
 
 
+@regex(r'(\d{4})\?')
 def pattern6(date_str, match):
+    """ '1950?' = '1950-01-01', '1950-12-31' """
     return (match.group(1) + '-01-01', match.group(1) + '-12-31')
 
 
+@regex(r'^(\d{4})[-s]$')
 def pattern7(date_str, match):
+    """ '1950-' | '1950s' = '1950-01-01', '1959-12-31' """
     return (match.group(1) + '-01-01', match.group(1)[:-1] + '9-12-31')
 
 
+@regex(r'(\d{2})[?-]{1,2}')
 def pattern8(date_str, match):
+    """ '19-' = '1900-01-01', '1999-12-31' """
     return (match.group(1) + '00-01-01', match.group(1) + '99-12-31')
 
 
-add_pattern(r'[Bb]etween (\d{4}) [Aa]nd (\d{4})', pattern1)  # "Between 1900 and 2000" = 1900-01-01 - 2000-12-31
-add_pattern(r'^(\d{4})[-s]$', pattern7)                      # "1950-"|"1950s" = 1950-01-01 - 1959-12-31
-add_pattern(r'^(\d{3})-$', pattern2)                         # "195-" = 1950-01-01 - 1959-12-31
-add_pattern(r'[Aa]fter (\d{4})', pattern3)                   # "After 1900" = 1900-12-31 - None
-add_pattern(r'[Bb]efore (\d{4})', pattern4)                  # "Before 1900" = None - 1900-01-01
-add_pattern(r'(\d{4}) or (\d{4})', pattern5)                 # "1950 or 1951" = 1950-01-01 - 1951-12-31
-add_pattern(r'(\d{4})\?', pattern6)                          # "1950?" = 1950-01-01 - 1950-12-31
-add_pattern(r'(\d{2})[?-]{1,2}', pattern8)                   # "19-" = 1900-01-01 - 1999-12-31
+add_patterns()
