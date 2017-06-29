@@ -1,0 +1,5 @@
+Summary
+=======
+This project is an attempt to normalize disparate date formats from free form    
+date fields in archival data into AtoM compatible date ranges that we can 
+import into the application.
