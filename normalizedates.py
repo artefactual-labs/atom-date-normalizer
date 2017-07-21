@@ -8,9 +8,38 @@ import csv
 import re
 import sys
 
+from datetime import datetime
+
 from patternhandlers import date_clean
 from patternhandlers import date_parse
 import vendor.daterangeparser
+
+def is_sane_date(date_range, min_year=1000, max_year=2100):
+    """ Check whether date range normalization is within a somewhat sane year range """
+
+    if not date_range or not isinstance(date_range[0], str):
+        return False
+
+    try:
+        # Convert to datetime temporarily via strptime, which will toss ValueError if not 1 <= year <= 9999
+        start_datetime = datetime.strptime(date_range[0], '%Y-%m-%d')
+        end_datetime = None
+
+        # It's possible to have the end date range set to None if there is no end range, only
+        # check date validity (via strptime) if we've got a string to deal with.
+        if isinstance(date_range[1], str):
+            end_datetime = datetime.strptime(date_range[1], '%Y-%m-%d')
+
+        # Also some manual checking to see if the year is within a specified 'sane' date range.
+        result = min_year <= start_datetime.year <= max_year
+        if end_datetime:
+            result = result and (min_year <= end_datetime.year <= max_year)
+
+    except ValueError as e:
+        return False
+
+    return result
+
 
 def parse_date_string(date_str):
     """ Given a date string, attempt to normalize it into AtoM compatible start / end dates.
@@ -25,13 +54,13 @@ def parse_date_string(date_str):
         # First attempt to parse the date range via the daterangeparser library
         # It will return two datetime objects specifying start/end range, we can use strftime to convert to string.
         r = vendor.daterangeparser.parse(date_str_clean)
-        if r:
+        if is_sane_date(r):
             return [date_str, r[0].strftime('%Y-%m-%d'), r[1].strftime('%Y-%m-%d')]
 
     except Exception as e:
         # daterangeparser cannot parse the date range, attempt to use our regex pattern matching / handler functions
         r = date_parse(date_str_clean)
-        if r:
+        if is_sane_date(r):
             return [date_str, r[0], r[1]]
 
 
