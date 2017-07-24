@@ -54,14 +54,15 @@ def parse_date_string(date_str):
         # First attempt to parse the date range via the daterangeparser library
         # It will return two datetime objects specifying start/end range, we can use strftime to convert to string.
         r = vendor.daterangeparser.parse(date_str_clean)
-        if is_sane_date(r):
-            return [date_str, r[0].strftime('%Y-%m-%d'), r[1].strftime('%Y-%m-%d')]
+        r = [dt.strftime('%Y-%m-%d') if isinstance(dt, datetime) else dt for dt in r]  # Convert any datetimes to strings (YYYY-MM-DD)
 
     except Exception as e:
         # daterangeparser cannot parse the date range, attempt to use our regex pattern matching / handler functions
         r = date_parse(date_str_clean)
-        if is_sane_date(r):
-            return [date_str, r[0], r[1]]
+
+    if is_sane_date(r):
+        return [date_str, r[0], r[1]]
+    return None
 
 
 def parse_csv(args):
