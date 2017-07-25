@@ -87,16 +87,33 @@ def pattern6(date_str, match):
     return (match.group(1) + '-01-01', match.group(1) + '-12-31')
 
 
-@regex(r'^(\d{4})[-s]$')
+@regex(r'^(\d{4})\'?[-s]$')
 def pattern7(date_str, match):
-    """ '1950-' | '1950s' = '1950-01-01', '1959-12-31' """
+    """ '1950-' | '1950s' | '1950''s' = '1950-01-01', '1959-12-31' """
     return (match.group(1) + '-01-01', match.group(1)[:-1] + '9-12-31')
 
 
-@regex(r'(\d{2})[?-]{1,2}')
+@regex(r'^(\d{2})[?-]{1,2}$')
 def pattern8(date_str, match):
     """ '19-' = '1900-01-01', '1999-12-31' """
     return (match.group(1) + '00-01-01', match.group(1) + '99-12-31')
 
+
+@regex(r'^(\d{3})--(\d{3})-$')
+def pattern9(date_str, match):
+    """ '195--196-' = '1950-01-01', '1969-12-31' """
+    return (match.group(1) + '0-01-01', match.group(2) + '9-12-31')
+
+
+@regex(r'^(\d{4})-(\d{3})-$')
+def pattern10(date_str, match):
+    """ '1955-196-' = '1955-01-01', '1969-12-31' """
+    return (match.group(1) + '-01-01', match.group(2) + '9-12-31')
+
+
+@regex(r'^(\d{3})--(\d{4})$')
+def pattern11(date_str, match):
+    """ '195--1960' = '1950-01-01', '1960-12-31' """
+    return (match.group(1) + '0-01-01', match.group(2) + '-12-31')
 
 add_patterns()
