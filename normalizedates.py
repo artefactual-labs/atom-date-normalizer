@@ -17,13 +17,17 @@ import vendor.daterangeparser
 def is_sane_date(date_range, min_year=1000, max_year=2100):
     """ Check whether date range normalization is within a somewhat sane year range """
 
-    if not date_range or not isinstance(date_range[0], str):
+    if not date_range:
         return False
 
     try:
-        # Convert to datetime temporarily via strptime, which will toss ValueError if not 1 <= year <= 9999
-        start_datetime = datetime.strptime(date_range[0], '%Y-%m-%d')
         end_datetime = None
+        start_datetime = None
+
+        # Convert to datetime temporarily via strptime, which will toss ValueError if not 1 <= year <= 9999
+        # Note that start date can be 'None' - e.g. in the case of 'before 1976'.
+        if isinstance(date_range[0], str):
+            start_datetime = datetime.strptime(date_range[0], '%Y-%m-%d')
 
         # It's possible to have the end date range set to None if there is no end range, only
         # check date validity (via strptime) if we've got a string to deal with.
@@ -31,7 +35,9 @@ def is_sane_date(date_range, min_year=1000, max_year=2100):
             end_datetime = datetime.strptime(date_range[1], '%Y-%m-%d')
 
         # Also some manual checking to see if the year is within a specified 'sane' date range.
-        result = min_year <= start_datetime.year <= max_year
+        result = True
+        if start_datetime:
+            result = min_year <= start_datetime.year <= max_year
         if end_datetime:
             result = result and (min_year <= end_datetime.year <= max_year)
 
