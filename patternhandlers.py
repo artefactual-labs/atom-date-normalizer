@@ -146,5 +146,9 @@ def pattern16(date_str, match):
     """ '195--1960' = '1950-01-01', '1960-12-31' """
     return (match.group(1) + '0-01-01', match.group(2) + '-12-31')
 
+@regex(r'^(\d{4}-\d{2}-\d{2})$')
+def pattern17(date_str, match):
+    """ '1995-10-20' = '1995-10-20', '1995-10-20' """
+    return (match.group(1), match.group(1))
 
 add_patterns()
