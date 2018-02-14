@@ -10,9 +10,9 @@ import sys
 
 from datetime import datetime
 
-from patternhandlers import date_clean
-from patternhandlers import date_parse
-import vendor.daterangeparser
+from atomdatenormalizer.patternhandlers import date_clean
+from atomdatenormalizer.patternhandlers import date_parse
+import atomdatenormalizer.vendor.daterangeparser
 
 def is_sane_date(date_range, min_year=1000, max_year=2100):
     """ Check whether date range normalization is within a somewhat sane year range """
@@ -59,7 +59,7 @@ def parse_date_string(date_str):
     try:
         # First attempt to parse the date range via the daterangeparser library
         # It will return two datetime objects specifying start/end range, we can use strftime to convert to string.
-        r = vendor.daterangeparser.parse(date_str_clean)
+        r = atomdatenormalizer.vendor.daterangeparser.parse(date_str_clean)
         r = [dt.strftime('%Y-%m-%d') if isinstance(dt, datetime) else dt for dt in r]  # Convert any datetimes to strings (YYYY-MM-DD)
 
     except Exception as e:

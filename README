@@ -1,5 +1,7 @@
 Summary
 =======
-This project is an attempt to normalize disparate date formats from free form    
-date fields in archival data into AtoM compatible date ranges that we can 
+This project is an attempt to normalize disparate date formats from free form
+date fields in archival data into AtoM compatible date ranges that we can
 import into the application.
+
+Requires PyParsing. Install with 'pip3 install pyparsing'
