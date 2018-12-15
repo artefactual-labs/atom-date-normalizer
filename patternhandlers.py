@@ -1,6 +1,7 @@
 import calendar
 import re
 import sys
+import datetime
 
 from inspect import getmembers, isfunction
 
@@ -146,9 +147,96 @@ def pattern16(date_str, match):
     """ '195--1960' = '1950-01-01', '1960-12-31' """
     return (match.group(1) + '0-01-01', match.group(2) + '-12-31')
 
+
 @regex(r'^(\d{4}-\d{2}-\d{2})$')
 def pattern17(date_str, match):
     """ '1995-10-20' = '1995-10-20', '1995-10-20' """
     return (match.group(1), match.group(1))
+
+
+@regex(r'^\?-(\d{4})$')
+def pattern18(date_str, match):
+    """ '?-1922' = '1922-01-01', '1922-12-31' """
+    return (match.group(1) + '-01-01', match.group(1) + '-12-31')
+
+
+@regex(r'^(\d{4}),\s*(\d{4})$')
+def pattern19(date_str, match):
+    """ '1918, 1922' = '1918-01-01', '1922-12-31' """
+    return (match.group(1) + '-01-01', match.group(1) + '-12-31')
+
+
+@regex(r'^(\d{4})-(\d{4})\'?[-s]$')
+def pattern20(date_str, match):
+    """ '1976-1985-' | '1976-1985s' | '1976-1985''s' = '1976-01-01', '1985-12-31' """
+    return (match.group(1) + '-01-01', match.group(2) + '-12-31')
+
+
+@regex(r'^(\d{4})-*$')
+def pattern21(date_str, match):
+    """ '1976-' | '1976--' | '1976---' = '1976-01-01', '1976-12-31' """
+    return (match.group(1) + '-01-01', match.group(1) + '-12-31')
+
+
+@regex(r'^([a-zA-Z]*\s+\d{1,2},\s+\d{4})-([a-zA-Z]*\s+\d{1,2},\s+\d{4})$')
+def pattern22(date_str, match):
+    """ 'July 5, 1905-May 27, 2000' = '1905-07-05', '2000-05-27' """
+    date1 = datetime.datetime.strptime(match.group(1), "%B %d, %Y").date()
+    date2 = datetime.datetime.strptime(match.group(2), "%B %d, %Y").date()
+    return (date1.isoformat(), date2.isoformat())
+
+
+@regex(r'^(\d{4})-(\d{2})$')
+def pattern23(date_str, match):
+    """ '1834-08' = '1834-08-01', '1834-08-31' """
+    return (match.group(1) + '-' + match.group(2) + '-01', match.group(1) + '-' + match.group(2) + '-' + str(calendar.monthrange(int(match.group(1)), int(match.group(2)))[1]))
+
+
+@regex(r'^(\d{4}-\d{2}).*to.*(\d{4})-(\d{2})$')
+def pattern24(date_str, match):
+    """ '2006-01 to 2006-12' = '2006-01-01', '2006-12-31' """
+    return (match.group(1) + '-01', match.group(2) + '-' + match.group(3) + '-' + str(calendar.monthrange(int(match.group(2)), int(match.group(3)))[1]))
+
+
+@regex(r'^(\d{4}-\d{2}).*to.*(\d{4}-\d{2}-\d{2})$')
+def pattern25(date_str, match):
+    """ '2006-01 to 2006-12-16' = '2006-01-01', '2006-12-16' """
+    return (match.group(1) + '-01', match.group(2))
+
+
+@regex(r'^(\d{4}-\d{2}-\d{2}).*to.*(\d{4})-(\d{2})$')
+def pattern26(date_str, match):
+    """ '2006-01-18 to 2006-12' = '2006-01-18', '2006-12-16' """
+    return (match.group(1), match.group(2) + '-' + match.group(3) + '-' + str(calendar.monthrange(int(match.group(2)), int(match.group(3)))[1]))
+
+
+@regex(r'^(\d{4}-\d{2}-\d{2})\s+to\s+(\d{4}-\d{2}-\d{2})$')
+def pattern27(date_str, match):
+    """ '1930-04-03 to 1989-07-05' = '1930-04-03', '1989-07-05' """
+    return (match.group(1), match.group(2))
+
+
+@regex(r'(\d{4})\s+(or|and)\s+[Aa]fter')
+def pattern28(date_str, match):
+    """ '1900 or after' = '1900-12-31', None """
+    return (match.group(1) + '-12-31', None)
+
+
+@regex(r'(\d{4})\s+(or|and)\s+[Bb]efore')
+def pattern29(date_str, match):
+    """ '1900 or before' = None, '1900-01-01' """
+    return (None, match.group(1) + '-01-01')
+
+
+@regex(r'(\d{4}-\d{2}-\d{2})\s+(and|or)\s+[Aa]fter')
+def pattern30(date_str, match):
+    """ '1923-02-27 or after' = '1923-02-27', None """
+    return (match.group(1), None)
+
+
+@regex(r'(\d{4}-\d{2}-\d{2})\s+(and|or)\s+[Bb]efore')
+def pattern31(date_str, match):
+    """ '1923-02-27 or before' = None, '1923-02-27' """
+    return (None, match.group(1))
 
 add_patterns()
