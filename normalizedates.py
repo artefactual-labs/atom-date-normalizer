@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 """ This script will read in a CSV file and transform any date strings into AtoM readable start and end dates whenever
     possible. A CSV will be outputted indicating the original date string, and the AtoM compatible start/end dates """
 
 import argparse
 import csv
+import re
 import sys
 
 from datetime import datetime
 
-from patternhandlers import date_clean
-from patternhandlers import date_parse
+from patternhandlers import date_clean, date_parse, NormalizeDateException
 import vendor.daterangeparser
 
 
@@ -48,14 +49,17 @@ def is_sane_date(date_range, min_year=1000, max_year=2100):
 
 
 def parse_date_string(date_str):
-    """ Given a date string, attempt to normalize it into AtoM compatible start / end dates.
+    """parse_date_string
 
-        :param date_string: Unnormalized date string.
-        :return: None if this function fails to normalize the date string, otherwise return a list with three
-                 elements: (originalDateString, normalizedStartDateString, normalizedEndDateString)
+    Given a date string, attempt to normalize it into AtoM compatible start and
+    end dates.
+
+    :param date_string: Unnormalized date string.
+    :return: tuple containing original date, normalized start, normalized end
+             dates if the date could be normalized to an ISO date format.
+    :return: None if the date couldn't be normalized to an ISO date format.
     """
     date_str_clean = date_clean(date_str)  # Remove junk around dates
-
     try:
         # First attempt to parse the date range via the daterangeparser library
         # It will return two datetime objects specifying start/end range, we can use strftime to convert to string.
@@ -63,13 +67,16 @@ def parse_date_string(date_str):
         r = [
             dt.strftime("%Y-%m-%d") if isinstance(dt, datetime) else dt for dt in r
         ]  # Convert any datetimes to strings (YYYY-MM-DD)
-
-    except Exception as e:
-        # daterangeparser cannot parse the date range, attempt to use our regex pattern matching / handler functions
-        r = date_parse(date_str_clean)
-
-    if is_sane_date(r):
-        return [date_str, r[0], r[1]]
+    except vendor.daterangeparser.ParseException as e:
+        # daterangeparser cannot parse the date range, attempt to use our regex
+        # pattern matching / handler functions.
+        try:
+            res = date_parse(date_str_clean)
+        except NormalizeDateException as err:
+            print(err, file=sys.stderr)
+            return None
+    if is_sane_date(res):
+        return [date_str, res[0], res[1]]
     return None
 
 
