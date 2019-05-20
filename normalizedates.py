@@ -5,7 +5,6 @@
 
 import argparse
 import csv
-import re
 import sys
 
 from datetime import datetime
