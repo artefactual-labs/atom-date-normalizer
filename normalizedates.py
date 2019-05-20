@@ -73,7 +73,7 @@ def parse_date_string(date_str):
         try:
             res = date_parse(date_str_clean)
         except NormalizeDateException as err:
-            print(err, file=sys.stderr)
+            print("DateNotNormalized: No match found:", date_str, file=sys.stderr)
             return None
     if is_sane_date(res):
         return [date_str, res[0], res[1]]

@@ -122,9 +122,7 @@ def date_parse(date_str):
                 return normalize_month_day_year(date_str)
             except ValueError:
                 pass
-    raise NormalizeDateException(
-        "DATE NOT NORMALIZED: No match found: {}".format(date_str)
-    )
+    raise NormalizeDateException
 
 
 # Custom date parsing where the regex parsers might not suit our purposes.
