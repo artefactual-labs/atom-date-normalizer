@@ -14,6 +14,7 @@ from patternhandlers import date_clean
 from patternhandlers import date_parse
 import vendor.daterangeparser
 
+
 def is_sane_date(date_range, min_year=1000, max_year=2100):
     """ Check whether date range normalization is within a somewhat sane year range """
 
@@ -27,12 +28,12 @@ def is_sane_date(date_range, min_year=1000, max_year=2100):
         # Convert to datetime temporarily via strptime, which will toss ValueError if not 1 <= year <= 9999
         # Note that start date can be 'None' - e.g. in the case of 'before 1976'.
         if isinstance(date_range[0], str):
-            start_datetime = datetime.strptime(date_range[0], '%Y-%m-%d')
+            start_datetime = datetime.strptime(date_range[0], "%Y-%m-%d")
 
         # It's possible to have the end date range set to None if there is no end range, only
         # check date validity (via strptime) if we've got a string to deal with.
         if isinstance(date_range[1], str):
-            end_datetime = datetime.strptime(date_range[1], '%Y-%m-%d')
+            end_datetime = datetime.strptime(date_range[1], "%Y-%m-%d")
 
         # Also some manual checking to see if the year is within a specified 'sane' date range.
         result = True
@@ -60,7 +61,9 @@ def parse_date_string(date_str):
         # First attempt to parse the date range via the daterangeparser library
         # It will return two datetime objects specifying start/end range, we can use strftime to convert to string.
         r = vendor.daterangeparser.parse(date_str_clean)
-        r = [dt.strftime('%Y-%m-%d') if isinstance(dt, datetime) else dt for dt in r]  # Convert any datetimes to strings (YYYY-MM-DD)
+        r = [
+            dt.strftime("%Y-%m-%d") if isinstance(dt, datetime) else dt for dt in r
+        ]  # Convert any datetimes to strings (YYYY-MM-DD)
 
     except Exception as e:
         # daterangeparser cannot parse the date range, attempt to use our regex pattern matching / handler functions
@@ -85,12 +88,16 @@ def parse_csv(args):
         reader = csv.DictReader(f)
 
         if args.column not in reader.fieldnames:
-            print('Date string column "{}" not found in CSV, if you are using a custom column name for your date '
-                  'strings, use the -c option to specify the custom name.'.format(args.column))
+            print(
+                'Date string column "{}" not found in CSV, if you are using a custom column name for your date '
+                "strings, use the -c option to specify the custom name.".format(
+                    args.column
+                )
+            )
             sys.exit(1)
 
         for record in reader:
-            date_str = record.get(args.column, '').strip()
+            date_str = record.get(args.column, "").strip()
             if not date_str:
                 continue
 
@@ -106,9 +113,9 @@ def parse_csv(args):
 
 
 def write_csv(args, results):
-    with open(args.output, 'w') as f:
+    with open(args.output, "w") as f:
         w = csv.writer(f)
-        w.writerow(('originalDateString', 'startDate', 'endDate'))
+        w.writerow(("originalDateString", "startDate", "endDate"))
         w.writerows(results)
 
 
@@ -121,8 +128,8 @@ def handle_error_log(args, malformed_dates):
     if not args.error_log:
         return
 
-    with open(args.error_log, 'w') as f:
-        print('invalidDates', file=f)
+    with open(args.error_log, "w") as f:
+        print("invalidDates", file=f)
         for date_str in malformed_dates:
             print(date_str, file=f)
 
@@ -133,11 +140,24 @@ def get_args():
         :return: Namespace object containing the various CLI args/opts as attributes (e.g.: ret.csv)
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('csv', help='Path to input CSV containing date strings')
-    parser.add_argument('-e', '--error-log', help='Specify an error log listing all date strings that failed to parse')
-    parser.add_argument('-o', '--output', default='normalized_dates.csv', help='Path to output CSV with parsed dates')
-    parser.add_argument('-c', '--column', default='Dates',
-                        help='Specify column name for date strings in inputted CSV (defaults to "Dates")')
+    parser.add_argument("csv", help="Path to input CSV containing date strings")
+    parser.add_argument(
+        "-e",
+        "--error-log",
+        help="Specify an error log listing all date strings that failed to parse",
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        default="normalized_dates.csv",
+        help="Path to output CSV with parsed dates",
+    )
+    parser.add_argument(
+        "-c",
+        "--column",
+        default="Dates",
+        help='Specify column name for date strings in inputted CSV (defaults to "Dates")',
+    )
 
     return parser.parse_args()
 
@@ -147,5 +167,5 @@ def main():
     write_csv(get_args(), results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())
