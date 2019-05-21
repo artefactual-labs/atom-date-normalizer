@@ -315,4 +315,28 @@ def pattern22(date_str, match):
     return ("{}-01-01".format(match.group(1)), "{}-12-31".format(match.group(2)))
 
 
+@regex(r"^(\d{4})(S|s)-(\d{4})(S|s)?$")
+def pattern23(date_str, match):
+    """Match a yyyys-yyyys string where the second yyyys is optional and return
+    the dates YYYY-01-01 to YYY9-12-31.
+    """
+    date_one = match.group(1)
+    date_two = match.group(3)
+    if match.group(4):
+        date_two = "{}9".format(date_two[:-1])
+        return ("{}-01-01".format(date_one), "{}-12-31".format(date_two))
+    return ("{}-01-01".format(date_one), "{}-12-31".format(date_two))
+
+
+@regex(r"^(\d{4})(S|s)?-(\d{4})(S|s)$")
+def pattern24(date_str, match):
+    """Match a yyyys-yyyys string where the first yyyys is optional and return
+    the dates YYYY-01-01 to YYY9-12-31.
+    """
+    date_one = match.group(1)
+    date_two = match.group(3)
+    date_two = "{}9".format(date_two[:-1])
+    return ("{}-01-01".format(date_one), "{}-12-31".format(date_two))
+
+
 add_patterns()
