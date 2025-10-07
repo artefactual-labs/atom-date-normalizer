@@ -65,6 +65,21 @@ long_months = [
     "December",
 ]
 
+short_months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+]
+
 
 def add_patterns():
     global patterns
@@ -175,97 +190,97 @@ def regex(pattern):
 # Individual regular expression date handlers.
 @regex(r"[Bb]etween (\d{4}) [Aa]nd (\d{4})")
 def pattern1(date_str, match):
-    """ 'Between 1900 and 2000' = '1900-01-01', '2000-12-31' """
+    """'Between 1900 and 2000' = '1900-01-01', '2000-12-31'"""
     return (match.group(1) + "-01-01", match.group(2) + "-12-31")
 
 
 @regex(r"^(\d{3})-$")
 def pattern2(date_str, match):
-    """ '195-' = '1950-01-01', '1959-12-31' """
+    """'195-' = '1950-01-01', '1959-12-31'"""
     return (match.group(1) + "0-01-01", match.group(1) + "9-12-31")
 
 
 @regex(r"[Aa]fter (\d{4})")
 def pattern3(date_str, match):
-    """ 'After 1900' = '1900-12-31', None """
+    """'After 1900' = '1900-12-31', None"""
     return (match.group(1) + "-12-31", None)
 
 
 @regex(r"[Bb]efore (\d{4})")
 def pattern4(date_str, match):
-    """ 'Before 1900' = None, '1900-01-01' """
+    """'Before 1900' = None, '1900-01-01'"""
     return (None, match.group(1) + "-01-01")
 
 
 @regex(r"(\d{4}) or (\d{4})")
 def pattern5(date_str, match):
-    """ '1950 or 1951' = '1950-01-01', '1951-12-31' """
+    """'1950 or 1951' = '1950-01-01', '1951-12-31'"""
     return (match.group(1) + "-01-01", match.group(2) + "-12-31")
 
 
 @regex(r"(\d{4})\?")
 def pattern6(date_str, match):
-    """ '1950?' = '1950-01-01', '1950-12-31' """
+    """'1950?' = '1950-01-01', '1950-12-31'"""
     return (match.group(1) + "-01-01", match.group(1) + "-12-31")
 
 
 @regex(r"^(\d{4})\'?[-s]$")
 def pattern7(date_str, match):
-    """ '1950-' | '1950s' | '1950''s' = '1950-01-01', '1959-12-31' """
+    """'1950-' | '1950s' | '1950''s' = '1950-01-01', '1959-12-31'"""
     return (match.group(1) + "-01-01", match.group(1)[:-1] + "9-12-31")
 
 
 @regex(r"^(\d{2})[?-]{1,2}$")
 def pattern8(date_str, match):
-    """ '19-' = '1900-01-01', '1999-12-31' """
+    """'19-' = '1900-01-01', '1999-12-31'"""
     return (match.group(1) + "00-01-01", match.group(1) + "99-12-31")
 
 
 @regex(r"^(\d{2})---(\d{2})--$")
 def pattern9(date_str, match):
-    """ '18---19--' = '1800-01-01', '1999-12-31' """
+    """'18---19--' = '1800-01-01', '1999-12-31'"""
     return (match.group(1) + "00-01-01", match.group(2) + "99-12-31")
 
 
 @regex(r"^(\d{3})--(\d{2})--$")
 def pattern10(date_str, match):
-    """ '183--19--' = '1830-01-01', '1999-12-31' """
+    """'183--19--' = '1830-01-01', '1999-12-31'"""
     return (match.group(1) + "0-01-01", match.group(2) + "99-12-31")
 
 
 @regex(r"^(\d{2})---(\d{3})-$")
 def pattern11(date_str, match):
-    """ '18---194-' = '1800-01-01', '1949-12-31' """
+    """'18---194-' = '1800-01-01', '1949-12-31'"""
     return (match.group(1) + "00-01-01", match.group(2) + "9-12-31")
 
 
 @regex(r"^(\d{4})-(\d{2})--$")
 def pattern12(date_str, match):
-    """ '1834-19--' = '1834-01-01', '1999-12-31' """
+    """'1834-19--' = '1834-01-01', '1999-12-31'"""
     return (match.group(1) + "-01-01", match.group(2) + "99-12-31")
 
 
 @regex(r"^(\d{2})---(\d{4})$")
 def pattern13(date_str, match):
-    """ '18---1945' = '1800-01-01', '1945-12-31' """
+    """'18---1945' = '1800-01-01', '1945-12-31'"""
     return (match.group(1) + "00-01-01", match.group(2) + "-12-31")
 
 
 @regex(r"^(\d{3})--(\d{3})-$")
 def pattern14(date_str, match):
-    """ '195--196-' = '1950-01-01', '1969-12-31' """
+    """'195--196-' = '1950-01-01', '1969-12-31'"""
     return (match.group(1) + "0-01-01", match.group(2) + "9-12-31")
 
 
 @regex(r"^(\d{4})-(\d{3})-$")
 def pattern15(date_str, match):
-    """ '1955-196-' = '1955-01-01', '1969-12-31' """
+    """'1955-196-' = '1955-01-01', '1969-12-31'"""
     return (match.group(1) + "-01-01", match.group(2) + "9-12-31")
 
 
 @regex(r"^(\d{3})--(\d{4})$")
 def pattern16(date_str, match):
-    """ '195--1960' = '1950-01-01', '1960-12-31' """
+    """'195--1960' = '1950-01-01', '1960-12-31'"""
     return (match.group(1) + "0-01-01", match.group(2) + "-12-31")
 
 
@@ -315,6 +330,37 @@ def pattern22(date_str, match):
     the space in between the two years.
     """
     return ("{}-01-01".format(match.group(1)), "{}-12-31".format(match.group(2)))
+
+
+@regex(r"^(\d{4})[-\s]?([a-z]+)\s+(\d{4})[-\s]?([a-z]+)$")
+def pattern23(date_str, match):
+    """Match strings like '2000-Mar 2000-Mar' (after cleaning becomes '2000-march 2000-march')
+    and return the full month span as ISO dates: 'YYYY-MM-01', 'YYYY-MM-<last day>'.
+
+    Also supports differing end month, e.g., '2000-Mar 2000-Apr' -> '2000-03-01', '2000-04-30'.
+    """
+    y1 = int(match.group(1))
+    m1_name = match.group(2).lower()
+    y2 = int(match.group(3))
+    m2_name = match.group(4).lower()
+
+    month_lookup = {calendar.month_name[i].lower(): i for i in range(1, 13)}
+
+    if m1_name not in month_lookup or m2_name not in month_lookup:
+        raise NormalizeDateException(
+            "DATE NOT NORMALIZED: Unknown month name(s) in '{}'".format(date_str)
+        )
+
+    m1 = month_lookup[m1_name]
+    m2 = month_lookup[m2_name]
+
+    # Start is first day of first month
+    start = f"{y1}-{m1:02d}-01"
+    # End is last day of second month
+    _, eom2 = calendar.monthrange(y2, m2)
+    end = f"{y2}-{m2:02d}-{eom2:02d}"
+
+    return (start, end)
 
 
 add_patterns()
