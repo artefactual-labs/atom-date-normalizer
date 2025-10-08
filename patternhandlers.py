@@ -363,4 +363,151 @@ def pattern23(date_str, match):
     return (start, end)
 
 
+@regex(r"^(\d{4})[-\s]?([a-z]+)[-\s]?(\d{1,2})\s+(\d{4})[-\s]?([a-z]+)[-\s]?(\d{1,2})$")
+def pattern24(date_str, match):
+    """Match strings like '2001-Nov-22 2001-Nov-23' (after cleaning becomes
+    '2001-november-22 2001-november-23') and return precise ISO start/end dates
+    'YYYY-MM-DD', 'YYYY-MM-DD'. Also supports differing months and days, e.g.,
+    '2000-Mar-14 2000-Apr-18' -> '2000-03-14', '2000-04-18'.
+    """
+
+    y1 = int(match.group(1))
+    m1_name = match.group(2).lower()
+    d1 = int(match.group(3))
+    y2 = int(match.group(4))
+    m2_name = match.group(5).lower()
+    d2 = int(match.group(6))
+
+    month_lookup = {calendar.month_name[i].lower(): i for i in range(1, 13)}
+
+    if m1_name not in month_lookup or m2_name not in month_lookup:
+        raise NormalizeDateException(
+            "DATE NOT NORMALIZED: Unknown month name(s) in '{}'".format(date_str)
+        )
+
+    m1 = month_lookup[m1_name]
+    m2 = month_lookup[m2_name]
+
+    # Validate dates by constructing datetime objects
+    try:
+        start_dt = datetime(y1, m1, d1)
+        end_dt = datetime(y2, m2, d2)
+    except ValueError:
+        raise NormalizeDateException(
+            "DATE NOT NORMALIZED: Invalid day for month/year in '{}'".format(date_str)
+        )
+
+    start = start_dt.strftime("%Y-%m-%d")
+    end = end_dt.strftime("%Y-%m-%d")
+
+    return (start, end)
+
+
+@regex(
+    r"^(\d{4})[-\s]?([a-z]+)(?:[-\s]?(\d{1,2}))?\s+(\d{4})[-\s]?([a-z]+)(?:[-\s]?(\d{1,2}))?$"
+)
+def pattern25(date_str, match):
+    """Match mixed specificity ranges like:
+    - '1997-October 1998-June-04' -> '1997-10-01', '1998-06-04'
+    - '1992-August 1993-July-09' -> '1992-08-01', '1993-07-09'
+    - '1992-Aug 1993-Jul-09' -> '1992-08-01', '1993-07-09' (after cleaning)
+
+    Start day defaults to 01 when absent; end day defaults to month end when absent.
+    """
+
+    y1 = int(match.group(1))
+    m1_name = match.group(2).lower()
+    d1_str = match.group(3)
+    y2 = int(match.group(4))
+    m2_name = match.group(5).lower()
+    d2_str = match.group(6)
+
+    month_lookup = {calendar.month_name[i].lower(): i for i in range(1, 13)}
+
+    if m1_name not in month_lookup or m2_name not in month_lookup:
+        raise NormalizeDateException(
+            "DATE NOT NORMALIZED: Unknown month name(s) in '{}'".format(date_str)
+        )
+
+    m1 = month_lookup[m1_name]
+    m2 = month_lookup[m2_name]
+
+    # Determine start day: default to 1 if absent
+    d1 = int(d1_str) if d1_str is not None else 1
+    # Determine end day: default to last day of month if absent
+    if d2_str is None:
+        _, eom2 = calendar.monthrange(y2, m2)
+        d2 = eom2
+    else:
+        d2 = int(d2_str)
+
+    # Validate by constructing datetimes
+    try:
+        start_dt = datetime(y1, m1, d1)
+        end_dt = datetime(y2, m2, d2)
+    except ValueError:
+        raise NormalizeDateException(
+            "DATE NOT NORMALIZED: Invalid day for month/year in '{}'".format(date_str)
+        )
+
+    return (start_dt.strftime("%Y-%m-%d"), end_dt.strftime("%Y-%m-%d"))
+
+
+@regex(r"^(\d{4})\s+(\d{4})[-\s]?([a-z]+)(?:[-\s]?(\d{1,2}))?$")
+def pattern26(date_str, match):
+    """Match year-only start with a year-month or year-month-day end, e.g.:
+    - '1991 1993-May-05' -> '1991-01-01', '1993-05-05'
+    - '1991 1993-May'    -> '1991-01-01', '1993-05-31' (last day of May)
+
+    Start date defaults to January 1 when only a year is given.
+    """
+
+    y1 = int(match.group(1))
+    y2 = int(match.group(2))
+    m2_name = match.group(3).lower()
+    d2_str = match.group(4)
+
+    month_lookup = {calendar.month_name[i].lower(): i for i in range(1, 13)}
+    if m2_name not in month_lookup:
+        raise NormalizeDateException(
+            "DATE NOT NORMALIZED: Unknown month name in '{}'".format(date_str)
+        )
+
+    m2 = month_lookup[m2_name]
+
+    # End day: explicit or last day of month
+    if d2_str is None:
+        _, eom2 = calendar.monthrange(y2, m2)
+        d2 = eom2
+    else:
+        d2 = int(d2_str)
+
+    # Validate end date; start is always Jan 1
+    try:
+        end_dt = datetime(y2, m2, d2)
+    except ValueError:
+        raise NormalizeDateException(
+            "DATE NOT NORMALIZED: Invalid day for month/year in '{}'".format(date_str)
+        )
+
+    start = f"{y1}-01-01"
+    end = end_dt.strftime("%Y-%m-%d")
+
+    return (start, end)
+
+
+@regex(r"^(\d{3})\s*-\s*(\d{3})\s*-$")
+def pattern27(date_str, match):
+    """Match two decade-like 3-digit ranges separated by space, e.g.:
+    - '198- 199-' -> '1980-01-01', '1999-12-31'
+
+    Interprets '198-' as 1980s and '199-' as 1990s.
+    """
+    start_prefix = match.group(1)
+    end_prefix = match.group(2)
+    return (
+        f"{start_prefix}0-01-01",
+        f"{end_prefix}9-12-31",
+    )
+
 add_patterns()
