@@ -3,3 +3,26 @@ Summary
 This project is an attempt to normalize disparate date formats from free form    
 date fields in archival data into AtoM compatible date ranges that we can 
 import into the application.
+
+Running Tests Locally
+=====================
+
+If you cloned only this repository (artefactual-labs/atom-date-normalizer), you can run the tests in a virtual environment:
+
+- Ensure Python 3.8+ is installed.
+- Create and activate a virtual environment:
+  - `python3 -m venv .venv`
+  - `source .venv/bin/activate` (Linux/macOS)
+  - `\.venv\Scripts\activate` (Windows PowerShell)
+- Upgrade pip and install test dependencies:
+  - `python -m pip install --upgrade pip`
+  - `pip install -r requirements.txt`
+- Run the integration tests:
+  - `pytest -m integration`
+- Or run all tests:
+  - `pytest`
+
+Notes
+-----
+- Tests are located under `tests/` and use `pytest.ini` in this directory. The configuration is set up so tests run whether this project is standalone or used as a submodule.
+- The GitHub Actions workflow in `.github/workflows/tests.yml` runs the integration tests on push/PR.
