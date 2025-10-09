@@ -1,1 +1,23 @@
+# Python caches
 __pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Packaging / build artifacts
+*.egg-info/
+*.egg-info
+*.egg
+*.egg-link
+.eggs/
+build/
+dist/
+
+# Virtualenvs / tox
+.venv/
+.tox/
+
+# Coverage artifacts
+.coverage
+coverage.xml
+htmlcov/
