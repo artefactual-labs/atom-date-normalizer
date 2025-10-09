@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "atom-date-normalizer"
+version = "0.1.0"
+description = "Normalize free-form date strings into AtoM-compatible start/end dates"
+readme = "README"
+requires-python = ">=3.8"
+authors = [{ name = "Artefactual Labs" }]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
+  "Operating System :: OS Independent",
+]
+
+[tool.setuptools.packages.find]
+include = ["atom_date_normalizer", "atom_date_normalizer.*"]
+where = ["."]
