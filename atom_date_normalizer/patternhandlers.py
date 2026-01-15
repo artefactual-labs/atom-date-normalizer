@@ -511,5 +511,47 @@ def pattern27(date_str, match):
         f"{end_prefix}9-12-31",
     )
 
-add_patterns()
 
+@regex(r"^(\d{4})[-\s]?([a-z]+)(?:[-\s]?(\d{1,2}))?\s+(\d{4})$")
+def pattern28(date_str, match):
+    """Match year-month or year-month-day start with a year-only end, e.g.:
+    - '1993-May-05 1995' -> '1993-05-05', '1995-12-31'
+    - '1993-May 1995'    -> '1993-05-01', '1995-12-31'
+
+    End date defaults to Dec 31 when only a year is given.
+    """
+
+    y1 = int(match.group(1))
+    m1_name = match.group(2).lower()
+    d1_str = match.group(3)
+    y2 = int(match.group(4))
+
+    month_lookup = {calendar.month_name[i].lower(): i for i in range(1, 13)}
+    if m1_name not in month_lookup:
+        raise NormalizeDateException(
+            "DATE NOT NORMALIZED: Unknown month name in '{}'".format(date_str)
+        )
+
+    m1 = month_lookup[m1_name]
+
+    # End day: explicit or first day of month
+    if d1_str is None:
+        d1 = 1
+    else:
+        d1 = int(d1_str)
+
+    # Validate end date; start is always Jan 1
+    try:
+        start_dt = datetime(y1, m1, d1)
+    except ValueError:
+        raise NormalizeDateException(
+            "DATE NOT NORMALIZED: Invalid day for month/year in '{}'".format(date_str)
+        )
+
+    start = start_dt.strftime("%Y-%m-%d")
+    end = f"{y2}-12-31"
+
+    return (start, end)
+
+
+add_patterns()
