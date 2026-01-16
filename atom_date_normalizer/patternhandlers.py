@@ -47,6 +47,7 @@ re_subs = (
     (r"\boct\b", "october"),
     (r"\bnov\b", "november"),
     (r"\bdec\b", "december"),
+    (r"\b(\d{4})s\b", r"\1"),
 )
 
 
