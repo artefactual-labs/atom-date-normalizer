@@ -189,6 +189,14 @@ def regex(pattern):
 
 
 # Individual regular expression date handlers.
+@regex(r"^(\d{4})-(\d{2})-(\d{2})$")
+def pattern0(date_str, match):
+    """Match a YYYY-MM-DD string and return that exact date as the start with no end."""
+    # Validate date components by parsing; raises ValueError for invalid dates
+    parsed_date = datetime.strptime(date_str, "%Y-%m-%d")
+    return (parsed_date.strftime("%Y-%m-%d"), None)
+
+
 @regex(r"[Bb]etween (\d{4}) [Aa]nd (\d{4})")
 def pattern1(date_str, match):
     """'Between 1900 and 2000' = '1900-01-01', '2000-12-31'"""
